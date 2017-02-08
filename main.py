@@ -1,21 +1,20 @@
 # pylint: disable=W0104, line-too-long, C0325
 """Generate a sudoku puzzle"""
 import random
-from fpdf import FPDF
 from copy import deepcopy
+from fpdf import FPDF
 
 def create_empty_playing_field():
-    """Create an empty playing field"""
+    """Create a template for the sudoku with 0's as placeholders"""
     playing_field = [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]
     return playing_field
 
 def fill_square(playing_field, x_coord, y_coord, value):
-    """Fill a square with a number"""
+    """Fill a square in the playing_field with a number"""
     playing_field[y_coord][x_coord] = int(value)
 
 def fill_sudoku(playing_field):
-    """Fill the sudoke with a random puzzle"""
-    # Unique row, unique column and unique square
+    """Fill the sudoku template with a random puzzle"""
     for row in range(0, 9):
         invalid = True
         while invalid:
@@ -40,7 +39,7 @@ def fill_sudoku(playing_field):
     return playing_field
 
 def create_puzzle(playing_field, hints):
-    """Create a puzzle from a given playing field"""
+    """Create a random sudoku puzzle from a given playing field with n hints given"""
     if hints < 17:
         raise ValueError("The number of hints cannot be less than 17")
     is_squares_more_than_hints = True
@@ -51,41 +50,41 @@ def create_puzzle(playing_field, hints):
     return playing_field
 
 def amount_of_squares_filled(playing_field):
-    "Count the amount of filled squares"
+    """Count the amount of filled squares in playing_field"""
     count = 0
     for row in range(0, 9):
         count += playing_field[row].count('')
     return 81 - count
 
 def clear_row(playing_field, y_coord):
-    """Clear a row"""
+    """Clear a row in playing_field"""
     for column in range(0, 9):
         playing_field[y_coord][column] = 0
 
 def get_horizontal_values(playing_field, x_coord):
-    "Get the values of a horizontal colomn"
+    """Get the values of a horizontal row in playing_field"""
     horizontal_values = []
     for row in range(0, 9):
         horizontal_values.append(playing_field[row][x_coord])
     return horizontal_values
 
 def is_duplicate_in_horizontal(digit, playing_field, x_coord):
-    """Check if the number is a duplicate in the horizontal field"""
+    """Check if digit is a duplicate in the horizontal row in playing_field"""
     return (digit in get_horizontal_values(playing_field, x_coord))
 
 def get_vertical_values(playing_field, y_coord):
-    "Get the values of a horizontal colomn"
+    """Get the values of a vertical column in playing_field"""
     vertical_values = []
     for column in range(0, 9):
         vertical_values.append(playing_field[y_coord][column])
     return vertical_values
 
 def is_duplicate_in_vertical(digit, playing_field, y_coord):
-    """Check if the number is a duplicate in the vertical field"""
+    """Check if digit is a duplicate in the vertical column in playing_field"""
     return (digit in get_vertical_values(playing_field, y_coord))
 
 def get_area_values(playing_field, x_coord, y_coord):
-    """Get the values of the squares in the same area"""
+    """Get the values of the squares in the same area (the 3x3 squares)"""
     square_x = int(x_coord/3)
     square_y = int(y_coord/3)
     values_in_area = []
@@ -95,7 +94,7 @@ def get_area_values(playing_field, x_coord, y_coord):
     return values_in_area
 
 def is_duplicate_in_area(digit, playing_field, x_coord, y_coord):
-    """Check if the number is a duplicate in the square area"""
+    """Check if the number is a duplicate in the square area (the 3x3 squares)"""
     return (digit in get_area_values(playing_field, x_coord, y_coord))
 
 def generate_pdf_of_playing_field(puzzle, solution):
