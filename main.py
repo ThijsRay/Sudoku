@@ -2,6 +2,7 @@
 """Generate a sudoku puzzle"""
 import random
 from fpdf import FPDF
+from copy import deepcopy
 
 def create_empty_playing_field():
     """Create an empty playing field"""
@@ -37,6 +38,24 @@ def fill_sudoku(playing_field):
                     fill_square(playing_field, column, row, digit)
 
     return playing_field
+
+def create_puzzle(playing_field, hints):
+    """Create a puzzle from a given playing field"""
+    if hints < 17:
+        raise ValueError("The number of hints cannot be less than 17")
+    is_squares_more_than_hints = True
+    while is_squares_more_than_hints:
+        playing_field[random.randint(0, 8)][random.randint(0, 8)] = ''
+        if(amount_of_squares_filled(playing_field) <= hints):
+            is_squares_more_than_hints = False
+    return playing_field
+
+def amount_of_squares_filled(playing_field):
+    "Count the amount of filled squares"
+    count = 0
+    for row in range(0, 9):
+        count += playing_field[row].count('')
+    return 81 - count
 
 def clear_row(playing_field, y_coord):
     """Clear a row"""
@@ -79,44 +98,51 @@ def is_duplicate_in_area(digit, playing_field, x_coord, y_coord):
     """Check if the number is a duplicate in the square area"""
     return (digit in get_area_values(playing_field, x_coord, y_coord))
 
-def generate_pdf_of_playing_field(playing_field):
+def generate_pdf_of_playing_field(puzzle, solution):
     """Generate a pdf of the playing field for visualisation"""
     # A4 dimensions are 210 mm x 297 mm
     pdf = FPDF('P', 'mm', 'A4')
     width = 210
-    pdf.add_page()
     pdf.set_font('Arial', '', 26)
     square_side_size = 20
     offset_x = (width - (square_side_size*9))/2
     offset_y = 15
 
-    for row in range(0, 9):
-        pdf.set_y(offset_y + (square_side_size * (row)))
-        pdf.set_x(offset_x)
-        for column in range(0, 9):
-            pdf.cell(square_side_size, square_side_size, str(playing_field[row][column]), 1, 0, 'C')
+    for page in [puzzle, solution]:
+        pdf.add_page()
 
-    line_width = 1.5
-    pdf.set_line_width(line_width)
+        line_width = 0.2
+        pdf.set_line_width(line_width)
 
-    for horizontal in range(0, 2):
-        x_coord = offset_x + line_width/2
-        y_coord = offset_y + ((horizontal+1)*square_side_size*3)
-        pdf.line(x_coord, y_coord, width - x_coord, y_coord)
+        for row in range(0, 9):
+            pdf.set_y(offset_y + (square_side_size * (row)))
+            pdf.set_x(offset_x)
+            for column in range(0, 9):
+                pdf.cell(square_side_size, square_side_size, str(page[row][column]), 1, 0, 'C')
 
-    for vertical in range(0, 2):
-        x_coord = offset_y + ((vertical+1)*square_side_size*3)
-        y_coord = offset_x + line_width/2
-        pdf.line(x_coord, y_coord, x_coord, width - y_coord)
+        line_width = 1.5
+        pdf.set_line_width(line_width)
+
+        for horizontal in range(0, 2):
+            x_coord = offset_x + line_width/2
+            y_coord = offset_y + ((horizontal+1)*square_side_size*3)
+            pdf.line(x_coord, y_coord, width - x_coord, y_coord)
+
+        for vertical in range(0, 2):
+            x_coord = offset_y + ((vertical+1)*square_side_size*3)
+            y_coord = offset_x + line_width/2
+            pdf.line(x_coord, y_coord, x_coord, width - y_coord)
 
     pdf.output('sudoku.pdf', 'F')
 
 
 def main():
     """Run the main program"""
-    playing_field = fill_sudoku(create_empty_playing_field())
-    print(playing_field)
-    generate_pdf_of_playing_field(playing_field)
+    solution = fill_sudoku(create_empty_playing_field())
+    print(solution)
+    puzzle = create_puzzle(deepcopy(solution), 18)
+    generate_pdf_of_playing_field(puzzle, solution)
+
 
 if __name__ == "__main__":
     main()
