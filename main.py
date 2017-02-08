@@ -1,5 +1,5 @@
 # pylint: disable=W0104, line-too-long, C0325
-"""Give the answer of a sudoku puzzle"""
+"""Generate a sudoku puzzle"""
 import random
 from fpdf import FPDF
 
