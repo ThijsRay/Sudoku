@@ -6,13 +6,13 @@ from fpdf import FPDF
 def create_empty_playing_field():
     """Create an empty playing field"""
     playing_field = [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    #playing_field = [1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 5, 6, 7, 8, 9]
     return playing_field
 
 def fill_square(playing_field, x_coord, y_coord, value):
     """Fill a square with a number"""
     playing_field[y_coord][x_coord] = int(value)
 
-# Still produces some incorrect results
 def fill_sudoku(playing_field):
     """Fill the sudoke with a random puzzle"""
     # Unique row, unique column and unique square
@@ -25,12 +25,13 @@ def fill_sudoku(playing_field):
                 allowed_values = list(range(1, 10))
                 allowed_values = list(set(allowed_values) - set(get_horizontal_values(playing_field, column)))
                 allowed_values = list(set(allowed_values) - set(get_vertical_values(playing_field, row)))
+                allowed_values = list(set(allowed_values) - set(get_area_values(playing_field, column, row)))
                 try:
                     digit = random.choice(allowed_values)
                 except(ValueError, IndexError):
                     invalid = True
                     break
-                if ((is_duplicate_in_horizontal(digit, playing_field, column)) or (is_duplicate_in_vertical(digit, playing_field, row))) and not invalid:
+                if ((is_duplicate_in_horizontal(digit, playing_field, column)) or (is_duplicate_in_vertical(digit, playing_field, row)) or (is_duplicate_in_area(digit, playing_field, column, row))) and not invalid:
                     invalid = True
                     break
                 else:
@@ -39,6 +40,7 @@ def fill_sudoku(playing_field):
     return playing_field
 
 def clear_row(playing_field, y_coord):
+    """Clear a row"""
     for column in range(0, 9):
         playing_field[y_coord][column] = 0
 
@@ -63,6 +65,20 @@ def get_vertical_values(playing_field, y_coord):
 def is_duplicate_in_vertical(digit, playing_field, y_coord):
     """Check if the number is a duplicate in the vertical field"""
     return (digit in get_vertical_values(playing_field, y_coord))
+
+def get_area_values(playing_field, x_coord, y_coord):
+    """Get the values of the squares in the same area"""
+    square_x = int(x_coord/3)
+    square_y = int(y_coord/3)
+    values_in_area = []
+    for x_in_square in range(0, 3):
+        for y_in_square in range(0, 3):
+            values_in_area.append(playing_field[square_y*3 + y_in_square][square_x*3 + x_in_square])
+    return values_in_area
+
+def is_duplicate_in_area(digit, playing_field, x_coord, y_coord):
+    """Check if the number is a duplicate in the square area"""
+    return (digit in get_area_values(playing_field, x_coord, y_coord))
 
 def generate_pdf_of_playing_field(playing_field):
     """Generate a pdf of the playing field for visualisation"""
