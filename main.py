@@ -13,27 +13,34 @@ def fill_square(playing_field, x_coord, y_coord, value):
     playing_field[y_coord][x_coord] = int(value)
 
 # Still produces some incorrect results
-def generate_completed_sudoku(playing_field):
+def fill_sudoku(playing_field):
     """Fill the sudoke with a random puzzle"""
+    # Unique row, unique column and unique square
     for row in range(0, 9):
-        duplicate_in_column = True
-        while duplicate_in_column:
-            duplicate_in_column = False
+        invalid = True
+        while invalid:
+            invalid = False
+            clear_row(playing_field, row)
             for column in range(0, 9):
-                horizontal_values = get_horizontal_values(playing_field, column)
-                vertical_values = get_vertical_values(playing_field, row)
-                allowedvalues = list(range(1, 10))
-                while 1:
-                    if(allowedvalues == []):
-                        duplicate_in_column
-                        break
-                    digit = random.choice(allowedvalues)
-                    if (digit not in horizontal_values) and (digit not in vertical_values):
-                        break
-                    allowedvalues.remove(digit)
-                fill_square(playing_field, column, row, digit)
+                allowed_values = list(range(1, 10))
+                allowed_values = list(set(allowed_values) - set(get_horizontal_values(playing_field, column)))
+                allowed_values = list(set(allowed_values) - set(get_vertical_values(playing_field, row)))
+                try:
+                    digit = random.choice(allowed_values)
+                except(ValueError, IndexError):
+                    invalid = True
+                    break
+                if ((is_duplicate_in_horizontal(digit, playing_field, column)) or (is_duplicate_in_vertical(digit, playing_field, row))) and not invalid:
+                    invalid = True
+                    break
+                else:
+                    fill_square(playing_field, column, row, digit)
+
     return playing_field
 
+def clear_row(playing_field, y_coord):
+    for column in range(0, 9):
+        playing_field[y_coord][column] = 0
 
 def get_horizontal_values(playing_field, x_coord):
     "Get the values of a horizontal colomn"
@@ -42,12 +49,20 @@ def get_horizontal_values(playing_field, x_coord):
         horizontal_values.append(playing_field[row][x_coord])
     return horizontal_values
 
+def is_duplicate_in_horizontal(digit, playing_field, x_coord):
+    """Check if the number is a duplicate in the horizontal field"""
+    return (digit in get_horizontal_values(playing_field, x_coord))
+
 def get_vertical_values(playing_field, y_coord):
     "Get the values of a horizontal colomn"
     vertical_values = []
     for column in range(0, 9):
         vertical_values.append(playing_field[y_coord][column])
     return vertical_values
+
+def is_duplicate_in_vertical(digit, playing_field, y_coord):
+    """Check if the number is a duplicate in the vertical field"""
+    return (digit in get_vertical_values(playing_field, y_coord))
 
 def generate_pdf_of_playing_field(playing_field):
     """Generate a pdf of the playing field for visualisation"""
@@ -84,7 +99,8 @@ def generate_pdf_of_playing_field(playing_field):
 
 def main():
     """Run the main program"""
-    playing_field = generate_completed_sudoku(create_empty_playing_field())
+    playing_field = fill_sudoku(create_empty_playing_field())
+    print(playing_field)
     generate_pdf_of_playing_field(playing_field)
 
 if __name__ == "__main__":
