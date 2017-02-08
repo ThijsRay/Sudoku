@@ -38,6 +38,21 @@ def fill_sudoku(playing_field):
 
     return playing_field
 
+def create_puzzle(playing_field, hints):
+    """Create a puzzle from a given playing field"""
+    if hints < 17:
+        raise ValueError("The number of hints cannot be less than 17")
+    is_squares_more_than_hints = True
+    while is_squares_more_than_hints:
+        playing_field[random.randint(1, 9)][random.randint(1, 9)] = ''
+        if(amount_of_squares_filled(playing_field <= hints)):
+            is_squares_more_than_hints = False
+    return playing_field
+
+def amount_of_squares_filled(playing_field):
+    "Count the amount of filled squares"
+    return (81 - playing_field.count('')) + (81 - playing_field.count('0'))
+
 def clear_row(playing_field, y_coord):
     """Clear a row"""
     for column in range(0, 9):
