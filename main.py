@@ -1,4 +1,4 @@
-# pylint: disable=W0104, line-too-long
+# pylint: disable=W0104, line-too-long, C0325
 """Give the answer of a sudoku puzzle"""
 import random
 
@@ -14,16 +14,22 @@ def fill_square(playing_field, x_coord, y_coord, value):
 def generate_completed_sudoku(playing_field):
     """Fill the sudoke with a random puzzle"""
     for row in range(0, 9):
-        for column in range(0, 9):
-            horizontal_values = get_horizontal_values(playing_field, column)
-            vertical_values = get_vertical_values(playing_field, row)
-            allowedvalues = list(range(1, 10))
-            while 1:
-                digit = random.choice(allowedvalues)
-                if (digit not in horizontal_values) and (digit not in vertical_values):
-                    break
-                allowedvalues.remove(digit)
-            fill_square(playing_field, column, row, digit)
+        duplicate_in_column = True
+        while duplicate_in_column:
+            duplicate_in_column = False
+            for column in range(0, 9):
+                horizontal_values = get_horizontal_values(playing_field, column)
+                vertical_values = get_vertical_values(playing_field, row)
+                allowedvalues = list(range(1, 10))
+                while 1:
+                    if(allowedvalues == []):
+                        duplicate_in_column
+                        break
+                    digit = random.choice(allowedvalues)
+                    if (digit not in horizontal_values) and (digit not in vertical_values):
+                        break
+                    allowedvalues.remove(digit)
+                fill_square(playing_field, column, row, digit)
     return playing_field
 
 
